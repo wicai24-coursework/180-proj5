@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width">
+   <title>FA24 CS180 - Project 5: Diffusion Models</title>
+   <link rel="icon" type="image/png" href="rgb.png">
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+   <style>
+       a {
+           color: #4fd1c5;
+           text-decoration: none;
+       }
+
+       a:link {
+           color: #10a37f;
+       }
+
+       a:hover {
+           text-decoration: underline;
+       }
+       body {
+           font-family: Arial, sans-serif;
+           background-color: #202123;
+           color: #ffffff;
+           line-height: 1.6;
+           padding: 20px;
+           max-width: 1200px;
+           margin: 0 auto;
+       }
+       h1, h2, h3 {
+           color: #10a37f;
+       }
+       h1, h2 {
+           text-align: center;
+       }
+       .section {
+           margin-bottom: 40px;
+           border-bottom: 1px solid #333;
+           padding-bottom: 20px;
+       }
+       .example {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           margin-bottom: 30px;
+       }
+       .example p {
+           font-size: 18px;
+           text-align: left;
+           max-width: 900px;
+           margin: 10px auto;
+       }
+       .example img {
+           max-width: 80%;
+           height: auto;
+           margin: 15px 0;
+       }
+       .image-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+           gap: 20px;
+           margin: 20px 0;
+           width: 100%;
+       }
+       .image-grid img {
+           width: 100%;
+           height: auto;
+       }
+       .image-description {
+           color: #aaa;
+           text-align: center;
+           font-size: 14px;
+           margin-top: 5px;
+       }
+       .math-block {
+           background-color: #2d2d2d;
+           padding: 15px;
+           border-radius: 5px;
+           margin: 15px 0;
+           overflow-x: auto;
+       }
+       .results-grid {
+           display: grid;
+           grid-template-columns: repeat(3, 1fr);
+           gap: 15px;
+           margin: 20px 0;
+       }
+       .comparison-grid {
+           display: grid;
+           grid-template-columns: repeat(2, 1fr);
+           gap: 15px;
+           margin: 20px 0;
+       }
+   </style>
+</head>
+<body>
+   <h1>Project 5: Diffusion Models</h1>
+
+   <h2>Part A: Using DeepFloyd</h2>
+
+   <div class="section">
+    <h3>Sampling from the Model</h3>
+    <div class="example">
+        <p>
+            Using random seed 42, we explore DeepFloyd IF's sampling capabilities with varying 
+            inference steps. Here we show results for the prompt "a rocket ship" with 20 vs 50 
+            inference steps. We can observe that as inference steps increase, the image is more refined and contains more details even in the background.
+        </p>
+        <div class="comparison-grid">
+            <div>
+                <img src="data/rocket_20steps.png" alt="20 Steps">
+                <p class="image-description">20 inference steps</p>
+            </div>
+            <div>
+                <img src="data/rocket_50steps.png" alt="50 Steps">
+                <p class="image-description">50 inference steps</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="section">
+        <h3>Forward Diffusion</h3>
+        <div class="example">
+            <p>
+                This part includes the forward diffusion process that progressively adds noise to images. It follows the equation:
+            </p>
+            <div class="math-block">
+                \[
+                x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon 
+                \quad \text{where} \quad \epsilon \sim \mathcal{N}(0,1)
+                \]
+            </div>
+            <div class="results-grid">
+                <div>
+                    <img src="data/noise250.png" alt="t=250">
+                    <p class="image-description" style="font-size: 12px;">Noise level t=250</p>
+                </div>
+                <div>
+                    <img src="data/noise500.png" alt="t=500">
+                    <p class="image-description" style="font-size: 12px;">Noise level t=500</p>
+                </div>
+                <div>
+                    <img src="data/noise750.png" alt="t=750">
+                    <p class="image-description" style="font-size: 12px;">Noise level t=750</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Classical Denoising</h3>
+        <div class="example">
+            <p>
+                In this part I tried denoising using classical Gaussian blur filtering, the results show its limitations 
+                in high noise level.
+            </p>
+            <div class="results-grid">
+                <div>
+                    <img src="data/noise250.png" alt="Original t=250">
+                    <img src="data/denoised250.png" alt="Denoised t=250">
+                    <p class="image-description" style="font-size: 12px;">Original vs Denoised (t=250)</p>
+                </div>
+                <div>
+                    <img src="data/noise500.png" alt="Original t=500">
+                    <img src="data/denoised500.png" alt="Denoised t=500">
+                    <p class="image-description" style="font-size: 12px;">Original vs Denoised (t=500)</p>
+                </div>
+                <div>
+                    <img src="data/noise750.png" alt="Original t=750">
+                    <img src="data/denoised750.png" alt="Denoised t=750">
+                    <p class="image-description" style="font-size: 12px;">Original vs Denoised (t=750)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>One Step Denoising</h3>
+        <div class="example">
+            <p>
+                In this part, I used a pretrained UNet to perform one-step denoising with the prompt "a high quality photo". 
+                For each timestep, we visualize the original image, noisy version, and denoised result.
+            </p>
+            <div class="results-grid">
+                <div>
+                    <img src="data/orig250.png" alt="Original t=250">
+                    <img src="data/noise250.png" alt="Noisy t=250">
+                    <img src="data/denoised250_unet.png" alt="UNet Denoised t=250">
+                    <p class="image-description" style="font-size: 12px;">t=250: Original → Noisy → Denoised</p>
+                </div>
+                <div>
+                    <img src="data/orig500.png" alt="Original t=500">
+                    <img src="data/noise500.png" alt="Noisy t=500">
+                    <img src="data/denoised500_unet.png" alt="UNet Denoised t=500">
+                    <p class="image-description" style="font-size: 12px;">t=500: Original → Noisy → Denoised</p>
+                </div>
+                <div>
+                    <img src="data/orig750.png" alt="Original t=750">
+                    <img src="data/noise750.png" alt="Noisy t=750">
+                    <img src="data/denoised750_unet.png" alt="UNet Denoised t=750">
+                    <p class="image-description" style="font-size: 12px;">t=750: Original → Noisy → Denoised</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Iterative Denoising</h3>
+        <div class="example">
+            <p>
+                While one-step denoising shows improvement over gaussian blur, the quality still degrades with higher noise levels. 
+                Diffusion models are designed to work iteratively, theoretically starting from pure noise x₁₀₀₀ and progressively 
+                denoising to x₀. However, running 1000 denoising steps is computationally expensive.
+            </p>
+            <p>
+                We implement a more efficient approach using strided timesteps (step size 30, from 990 to 0), where each step 
+                follows the interpolation formula:
+            </p>
+            <div class="math-block">
+                \[
+                x_{t'} = \frac{\sqrt{\bar{\alpha}_{t'}}\beta_t}{1-\bar{\alpha}_t}x_0 + 
+                \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t'})}{1-\bar{\alpha}_t}x_t + v_\sigma
+                \]
+            </div>
+            <p>
+                Here, x_t is the current noisy image, x_t' is the less noisy target, and α_t = ᾱ_t/ᾱ_t'. 
+                This effectively interpolates between signal and noise estimates, with the variance term v_σ 
+                predicted by the model. Starting from timestep 10, we show that the iterative denoising results
+                compared to one-step and Gaussian approaches.
+            </p>
+            <div class="results-grid">
+                <div>
+                    <h4 style="font-size: 14px;">Iterative Denoising Progress</h4>
+                    <img src="data/iter_step0.png" alt="Noisy Campanile at t=690">
+                    <img src="data/iter_step5.png" alt="Noisy Campanile at t=540">
+                    <img src="data/iter_step10.png" alt="Noisy Campanile at t=390">
+                    <img src="data/iter_step15.png" alt="Noisy Campanile at t=240">
+                    <img src="data/iter_final.png" alt="Noisy Campanile at t=90">
+                    <p class="image-description" style="font-size: 12px;">Progressive denoising steps t = (690, 540, 390, 240, 90)</p>
+                </div>
+                <div>
+                    <h4 style="font-size: 14px;">Method Comparison</h4>
+                    <img src="data/iter_result.png" alt="Iterative Denoised">
+                    <img src="data/onestep_result.png" alt="One-step Denoised">
+                    <img src="data/gaussian_result.png" alt="Gaussian Blurred">
+                    <p class="image-description" style="font-size: 12px;">Iterative vs One-step vs Gaussian</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Diffusion Model Sampling</h3>
+        <div class="example">
+            <p>
+                While previous sections focused on denoising given images, diffusion models can also generate 
+                images from scratch. Starting with pure random noise (i_start = 0), we can apply our iterative 
+                denoising process to gradually form new images. Using the prompt "a high quality photo", 
+                we demonstrate the model's ability to generate new images from random initialization.
+            </p>
+            <div class="results-grid">
+                <div>
+                    <img src="data/sample1.png" alt="Sample 1">
+                    <p class="image-description" style="font-size: 12px;">Sample 1</p>
+                </div>
+                <div>
+                    <img src="data/sample2.png" alt="Sample 2">
+                    <p class="image-description" style="font-size: 12px;">Sample 2</p>
+                </div>
+                <div>
+                    <img src="data/sample3.png" alt="Sample 3">
+                    <p class="image-description" style="font-size: 12px;">Sample 3</p>
+                </div>
+                <div>
+                    <img src="data/sample4.png" alt="Sample 4">
+                    <p class="image-description" style="font-size: 12px;">Sample 4</p>
+                </div>
+                <div>
+                    <img src="data/sample5.png" alt="Sample 5">
+                    <p class="image-description" style="font-size: 12px;">Sample 5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Classifier Free Guidance</h3>
+        <div class="example">
+            <p>
+                To improve generation quality, we implement Classifier-Free Guidance (CFG), which combines 
+                conditional and unconditional noise estimates. The noise estimate is computed as:
+            </p>
+            <div class="math-block">
+                \[
+                \epsilon = \epsilon_u + \gamma(\epsilon_c - \epsilon_u)
+                \]
+            </div>
+            <p>
+                Here, ϵᵤ is the unconditional noise estimate (using an empty prompt ""), ϵ_c is the conditional 
+                estimate (using our desired prompt), and γ controls the guidance strength. When γ > 1, the model 
+                produces higher quality but less diverse images. We demonstrate results using γ = 7 with the conditional prompt 
+                "a high quality photo".
+            </p>
+            <div class="results-grid">
+                <div>
+                    <img src="data/cfg_sample1.png" alt="CFG Sample 1">
+                    <p class="image-description" style="font-size: 12px;">CFG Sample 1</p>
+                </div>
+                <div>
+                    <img src="data/cfg_sample2.png" alt="CFG Sample 2">
+                    <p class="image-description" style="font-size: 12px;">CFG Sample 2</p>
+                </div>
+                <div>
+                    <img src="data/cfg_sample3.png" alt="CFG Sample 3">
+                    <p class="image-description" style="font-size: 12px;">CFG Sample 3</p>
+                </div>
+                <div>
+                    <img src="data/cfg_sample4.png" alt="CFG Sample 4">
+                    <p class="image-description" style="font-size: 12px;">CFG Sample 4</p>
+                </div>
+                <div>
+                    <img src="data/cfg_sample5.png" alt="CFG Sample 5">
+                    <p class="image-description" style="font-size: 12px;">CFG Sample 5</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Image-to-image Translation</h3>
+        <div class="example">
+            <p>
+                In this part, we use diffusion model to edit existing images through controlled noising 
+                and denoising. When we add noise to an image and then denoise it, the model must "hallucinate" 
+                to reconstruct details, effectively projecting the image back onto the natural image manifold. 
+                The amount of noise added controls how much the output can deviate from the input.
+            </p>
+            <p>
+                Following the SDEdit algorithm, we apply varying levels of noise and use the prompt 
+                "a high quality photo" to guide the reconstruction. Higher i_start preserve more of 
+                the original image, and vice versa.
+            </p>
+            
+            <h4 style="font-size: 14px;">Test Image Edits</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/edit_1.png" alt="Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/edit_3.png" alt="Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/edit_5.png" alt="Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/edit_7.png" alt="Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/edit_10.png" alt="Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/edit_20.png" alt="Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+
+            <h4 style="font-size: 14px;">Apple Image Edits</h4>
+            <div class="results-grid">
+
+                <div>
+                    <img src="data/custom1_1.png" alt="Custom 1 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/custom1_3.png" alt="Custom 1 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/custom1_5.png" alt="Custom 1 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/custom1_7.png" alt="Custom 1 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/custom1_10.png" alt="Custom 1 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/custom1_20.png" alt="Custom 1 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+
+            <h4 style="font-size: 14px;">Orange Image Edits</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/custom2_1.png" alt="Custom 2 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/custom2_3.png" alt="Custom 2 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/custom2_5.png" alt="Custom 2 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/custom2_7.png" alt="Custom 2 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/custom2_10.png" alt="Custom 2 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/custom2_20.png" alt="Custom 2 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <h3>Editing Hand-Drawn and Web Images</h3>
+        <div class="example">
+            <p>
+                The image-to-image translation technique is particularly effective when starting with non-realistic 
+                images like sketches or paintings. The diffusion model helps project these abstract representations 
+                onto the natural image manifold, creating photorealistic interpretations while maintaining key elements.
+            </p>
+ 
+            <h4 style="font-size: 14px;">Web Image Edit</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/web_orig.png" alt="Web Original">
+                    <p class="image-description" style="font-size: 12px;">Original</p>
+                </div>
+                <div>
+                    <img src="data/web_1.png" alt="Web Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/web_3.png" alt="Web Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/web_5.png" alt="Web Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/web_7.png" alt="Web Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/web_10.png" alt="Web Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/web_20.png" alt="Web Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Hand-Drawn Image 1</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/hand1_orig.png" alt="Hand 1 Original">
+                    <p class="image-description" style="font-size: 12px;">Original</p>
+                </div>
+                <div>
+                    <img src="data/hand1_1.png" alt="Hand 1 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/hand1_3.png" alt="Hand 1 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/hand1_5.png" alt="Hand 1 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/hand1_7.png" alt="Hand 1 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/hand1_10.png" alt="Hand 1 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/hand1_20.png" alt="Hand 1 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Hand-Drawn Image 2</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/hand2_orig.png" alt="Hand 2 Original">
+                    <p class="image-description" style="font-size: 12px;">Original</p>
+                </div>
+                <div>
+                    <img src="data/hand2_1.png" alt="Hand 2 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/hand2_3.png" alt="Hand 2 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/hand2_5.png" alt="Hand 2 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/hand2_7.png" alt="Hand 2 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/hand2_10.png" alt="Hand 2 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/hand2_20.png" alt="Hand 2 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Inpainting</h3>
+        <div class="example">
+            <p>
+                We implement inpainting following the RePaint paper, where we selectively regenerate 
+                masked regions while preserving the rest of the image. Given an image x_orig and a binary 
+                mask m, at each denoising step we combine:
+            </p>
+            <div class="math-block">
+                \[
+                x_t \leftarrow \mathbf{m}x_t + (1-\mathbf{m})\text{forward}(x_{\text{orig}}, t)
+                \]
+            </div>
+            <p>
+                This ensures that unmasked regions (m=0) maintain their original content with appropriate 
+                noise levels, while masked regions (m=1) are generated through the diffusion process.
+            </p>
+ 
+            <h4 style="font-size: 14px;">Test Image Inpainting</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/inpaint_orig.png" alt="Original">
+                    <p class="image-description" style="font-size: 12px;">Original Image</p>
+                </div>
+                <div>
+                    <img src="data/inpaint_mask.png" alt="Mask">
+                    <p class="image-description" style="font-size: 12px;">Mask</p>
+                </div>
+                <div>
+                    <img src="data/inpaint_result.png" alt="Result">
+                    <p class="image-description" style="font-size: 12px;">Inpainted Result</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Custom Image 1</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/custom1_inpaint_orig.png" alt="Custom 1 Original">
+                    <p class="image-description" style="font-size: 12px;">Original Image</p>
+                </div>
+                <div>
+                    <img src="data/custom1_inpaint_mask.png" alt="Custom 1 Mask">
+                    <p class="image-description" style="font-size: 12px;">Mask</p>
+                </div>
+                <div>
+                    <img src="data/custom1_inpaint_result.png" alt="Custom 1 Result">
+                    <p class="image-description" style="font-size: 12px;">Inpainted Result</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Custom Image 2</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/custom2_inpaint_orig.png" alt="Custom 2 Original">
+                    <p class="image-description" style="font-size: 12px;">Original Image</p>
+                </div>
+                <div>
+                    <img src="data/custom2_inpaint_mask.png" alt="Custom 2 Mask">
+                    <p class="image-description" style="font-size: 12px;">Mask</p>
+                </div>
+                <div>
+                    <img src="data/custom2_inpaint_result.png" alt="Custom 2 Result">
+                    <p class="image-description" style="font-size: 12px;">Inpainted Result</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Text-Conditioned Image-to-image Translation</h3>
+        <div class="example">
+            <p>
+                Building on our previous image-to-image translation, we now add text conditioning to guide 
+                the projection process. Instead of using a neutral prompt, we use specific text prompts (in this example "a rocket ship")
+                to influence the reconstruction direction.
+            </p>
+            
+            <h4 style="font-size: 14px;">Test Image"</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/text_1.png" alt="Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/text_3.png" alt="Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/text_5.png" alt="Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/text_7.png" alt="Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/text_10.png" alt="Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/text_20.png" alt="Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Custom Image 1</h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/text_custom1_1.png" alt="Custom 1 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/text_custom1_3.png" alt="Custom 1 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/text_custom1_5.png" alt="Custom 1 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/text_custom1_7.png" alt="Custom 1 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/text_custom1_10.png" alt="Custom 1 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/text_custom1_20.png" alt="Custom 1 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Custom Image 2 </h4>
+            <div class="results-grid">
+                <div>
+                    <img src="data/text_custom2_1.png" alt="Custom 2 Step 1">
+                    <p class="image-description" style="font-size: 12px;">i_start = 1</p>
+                </div>
+                <div>
+                    <img src="data/text_custom2_3.png" alt="Custom 2 Step 3">
+                    <p class="image-description" style="font-size: 12px;">i_start = 3</p>
+                </div>
+                <div>
+                    <img src="data/text_custom2_5.png" alt="Custom 2 Step 5">
+                    <p class="image-description" style="font-size: 12px;">i_start = 5</p>
+                </div>
+                <div>
+                    <img src="data/text_custom2_7.png" alt="Custom 2 Step 7">
+                    <p class="image-description" style="font-size: 12px;">i_start = 7</p>
+                </div>
+                <div>
+                    <img src="data/text_custom2_10.png" alt="Custom 2 Step 10">
+                    <p class="image-description" style="font-size: 12px;">i_start = 10</p>
+                </div>
+                <div>
+                    <img src="data/text_custom2_20.png" alt="Custom 2 Step 20">
+                    <p class="image-description" style="font-size: 12px;">i_start = 20</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Visual Anagrams</h3>
+        <div class="example">
+            <p>
+                We create optical illusions that reveal different images when viewed upright versus upside down. 
+                The technique combines noise estimates from two different prompts:
+            </p>
+            <div class="math-block">
+                \[
+                \begin{aligned}
+                \epsilon_1 &= \text{UNet}(x_t, t, p_1) \\
+                \epsilon_2 &= \text{flip}(\text{UNet}(\text{flip}(x_t), t, p_2)) \\
+                \epsilon &= (\epsilon_1 + \epsilon_2)/2
+                \end{aligned}
+                \]
+            </div>
+            <p>
+                By averaging the noise estimates from normal and flipped orientations, we create images 
+                that blend two different interpretations.
+            </p>
+ 
+            <h4 style="font-size: 14px;">Anagram 1: Old Man ↔ Campfire</h4>
+            <div class="comparison-grid">
+                <div>
+                    <img src="data/anagram1_upright.png" alt="Upright Old Man">
+                    <p class="image-description" style="font-size: 12px;">"an oil painting of an old man"</p>
+                </div>
+                <div>
+                    <img src="data/anagram1_flipped.png" alt="Flipped Campfire">
+                    <p class="image-description" style="font-size: 12px;">"an oil painting of people around a campfire"</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Anagram 2: Mountain Village ↔ College Students</h4>
+            <div class="comparison-grid">
+                <div>
+                    <img src="data/anagram2_upright.png" alt="Upright Mountain">
+                    <p class="image-description" style="font-size: 12px;">"an oil painting of a snowy mountain village"</p>
+                </div>
+                <div>
+                    <img src="data/anagram2_flipped.png" alt="Flipped Students">
+                    <p class="image-description" style="font-size: 12px;">"an oil painting of college students"</p>
+                </div>
+            </div>
+ 
+            <h4 style="font-size: 14px;">Anagram 3: Skull ↔ Rose</h4>
+            <div class="comparison-grid">
+                <div>
+                    <img src="data/anagram3_upright.png" alt="Upright Skull">
+                    <p class="image-description" style="font-size: 12px;">"a lithograph of a skull"</p>
+                </div>
+                <div>
+                    <img src="data/anagram3_flipped.png" alt="Flipped Rose">
+                    <p class="image-description" style="font-size: 12px;">"a lithograph of a rose"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Hybrid Images</h3>
+        <div class="example">
+            <p>
+                We implement Factorized Diffusion to create hybrid images that appear different when viewed 
+                from different distances. The technique combines low-frequency components from one prompt with 
+                high-frequency components from another using the following algorithm:
+            </p>
+            <div class="math-block">
+                \[
+                \begin{aligned}
+                \epsilon_1 &= \text{UNet}(x_t, t, p_1) \\
+                \epsilon_2 &= \text{UNet}(x_t, t, p_2) \\
+                \epsilon &= f_{\text{lowpass}}(\epsilon_1) + f_{\text{highpass}}(\epsilon_2)
+                \end{aligned}
+                \]
+            </div>
+            <p>
+                Using Gaussian blur (kernel size 33, sigma 2) for frequency separation, we create 
+                images that reveal different content at different viewing distances.
+            </p>
+ 
+            <div class="results-grid">
+                <div>
+                    <img src="data/hybrid1.png" alt="Skull/Waterfall Hybrid">
+                    <p class="image-description" style="font-size: 12px;">Far: "a lithograph of a skull" / Close: "a lithograph of waterfalls"</p>
+                </div>
+                <div>
+                    <img src="data/hybrid2.png" alt="Car/Campfire Hybrid">
+                    <p class="image-description" style="font-size: 12px;">Far: "an oil painting of a car" / Close: "an oil painting of people around a campfire" (Think of the two white blocks in the middle right of the image as car lights.)</p>
+                </div>
+                <div>
+                    <img src="data/hybrid3.png" alt="Mountain/Baby Hybrid">
+                    <p class="image-description" style="font-size: 12px;">Far: "a photo of a mountain" / Close: "a photo of a baby crying"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<h2>Part B: Training Diffusion Models</h2>
+
+<div class="section">
+    <h3>1. Unconditional UNet</h3>
+    <div class="example">
+        <p>
+            Implementation and training of a basic unconditional UNet for denoising MNIST digits.
+            We demonstrate the model's behavior across different noise levels and training progression.
+        </p>
+
+        <h4>Sample Results</h4>
+        <div class="comparison-grid">
+            <div>
+                <img src="data/epoch1_samples1.png" alt="Epoch 1 Results">
+                <p class="image-description"></p>
+            </div>
+            <div>
+                <img src="data/epoch5_samples1.png" alt="Epoch 5 Results">
+                <p class="image-description"></p>
+            </div>
+        </div>
+
+        <h4>Training Progress</h4>
+        <div class="image-grid">
+            <img src="data/training_loss1.png" alt="Training Loss">
+            <p class="image-description">Training loss curve</p>
+        </div>
+        
+        <h4>Noising Process Visualization</h4>
+        <div class="image-grid">
+            <img src="data/noise_process.png" alt="Noising Process">
+            <p class="image-description">Visualization of noising process with σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
+        </div>
+
+        <h4>Out-of-Distribution Testing</h4>
+        <div class="image-grid">
+            <img src="data/ood_results.png" alt="Out of Distribution Results">
+            <p class="image-description">Results on varying noise levels σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h3>2. Time-Conditioned UNet</h3>
+    <div class="example">
+        <p>
+            Extension of the UNet with time conditioning, enabling controlled denoising at different timesteps.
+            The model learns to handle varying noise levels through explicit time conditioning.
+        </p>
+        
+        <div class="math-block">
+            \[
+            L = \mathbb{E}_{\epsilon,x_0,t}\|\epsilon_\theta(x_t, t) - \epsilon\|^2
+            \]
+        </div>
+
+        <h4>Training Progress</h4>
+        <div class="image-grid">
+            <img src="data/training_loss.png" alt="Training Loss">
+            <p class="image-description">Training loss curve over iterations</p>
+        </div>
+
+        <h4>Sample Results</h4>
+        <div class="comparison-grid">
+            <div>
+                <img src="data/epoch1_samples.png" alt="Epoch 1 Results">
+                <p class="image-description"></p>
+            </div>
+            <div>
+                <img src="data/epoch5_samples.png" alt="Epoch 5 Results">
+                <p class="image-description"></p>
+            </div>
+            <div>
+                <img src="data/epoch10_samples.png" alt="Epoch 10 Results">
+                <p class="image-description"></p>
+            </div>
+            <div>
+                <img src="data/epoch15_samples.png" alt="Epoch 15 Results">
+                <p class="image-description"></p>
+            </div>
+            <div>
+                <img src="data/epoch20_samples.png" alt="Epoch 20 Results">
+                <p class="image-description"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h3>3. Class-Conditioned UNet</h3>
+    <div class="example">
+        <p>
+            Implementation of class conditioning in the UNet, allowing controlled generation of specific MNIST digits.
+            The model learns to associate class embeddings with digit appearances.
+        </p>
+
+        <h4>Training Progress</h4>
+        <div class="image-grid">
+            <img src="data/class_cond_loss.png" alt="Class-Conditioned Training Loss">
+            <p class="image-description">Training loss curve for class-conditioned model</p>
+        </div>
+
+        <h4>Generated Samples</h4>
+        <div class="image-grid">
+            <img src="data/class_cond_samples1.png" alt="Class-Conditioned Samples">
+            <p class="image-description">4 samples per digit class (0-9) at epoch 5</p>
+        </div>
+        <h4>Generated Samples</h4>
+        <div class="image-grid">
+            <img src="data/class_cond_samples2.png" alt="Class-Conditioned Samples">
+            <p class="image-description">4 samples per digit class (0-9) at epoch 20</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
