@@ -88,11 +88,28 @@
            margin: 20px 0;
        }
        .comparison-grid {
-           display: grid;
-           grid-template-columns: repeat(2, 1fr);
-           gap: 15px;
-           margin: 20px 0;
-       }
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin: 20px 0;
+    }
+    .centered-figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px 0;
+    }
+    
+    .centered-figure img {
+        max-width: 100%;
+    }
+    
+    .centered-figure .image-description {
+        text-align: center;
+        margin-top: 10px;
+        color: #aaa;
+        font-size: 12px;
+    }
    </style>
 </head>
 <body>
@@ -798,120 +815,171 @@
         </div>
     </div>
 
-<h2>Part B: Training Diffusion Models</h2>
+    <h2>Part B: Training Diffusion Models</h2>
 
-<div class="section">
-    <h3>1. Unconditional UNet</h3>
-    <div class="example">
-        <p>
-            Implementation and training of a basic unconditional UNet for denoising MNIST digits.
-            We demonstrate the model's behavior across different noise levels and training progression.
-        </p>
-
-        <h4>Sample Results</h4>
-        <div class="comparison-grid">
-            <div>
-                <img src="data/epoch1_samples1.png" alt="Epoch 1 Results">
-                <p class="image-description"></p>
+    <div class="section">
+        <h3>Unconditional UNet</h3>
+        <div class="example">
+            <p>
+                Implementation and training of a basic unconditional UNet for denoising MNIST digits. The training objective 
+                is to denoise images with σ = 0.5 noise level, optimizing:
+            </p>
+            <div class="math-block">
+                \[
+                L = \mathbb{E}_{z,x}\|D_\theta(z) - x\|^2
+                \]
             </div>
-            <div>
-                <img src="data/epoch5_samples1.png" alt="Epoch 5 Results">
-                <p class="image-description"></p>
+            <p>
+                Training Parameters:
+                <ul>
+                    <li>Dataset: MNIST via torchvision.datasets.MNIST</li>
+                    <li>Batch Size: 256</li>
+                    <li>Epochs: 5</li>
+                    <li>Model: UNet with hidden dimension D = 128</li>
+                    <li>Optimizer: Adam with learning rate 1e-4</li>
+                    <li>Noise Level: σ = 0.5</li>
+                </ul>
+                Images are noised only when fetched from the dataloader to improve generalization through new noise patterns in each epoch.
+            </p>
+     
+            <h4>UNet Architecture</h4>
+            <div class="centered-figure">
+                <img src="data/unconditional_arch.png" alt="UNet Architecture">
+                <p class="image-description">Unconditional UNet architecture</p>
             </div>
-        </div>
-
-        <h4>Training Progress</h4>
-        <div class="image-grid">
-            <img src="data/training_loss1.png" alt="Training Loss">
-            <p class="image-description">Training loss curve</p>
-        </div>
-        
-        <h4>Noising Process Visualization</h4>
-        <div class="image-grid">
-            <img src="data/noise_process.png" alt="Noising Process">
-            <p class="image-description">Visualization of noising process with σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
-        </div>
-
-        <h4>Out-of-Distribution Testing</h4>
-        <div class="image-grid">
-            <img src="data/ood_results.png" alt="Out of Distribution Results">
-            <p class="image-description">Results on varying noise levels σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
-        </div>
-    </div>
-</div>
-
-<div class="section">
-    <h3>2. Time-Conditioned UNet</h3>
-    <div class="example">
-        <p>
-            Extension of the UNet with time conditioning, enabling controlled denoising at different timesteps.
-            The model learns to handle varying noise levels through explicit time conditioning.
-        </p>
-        
-        <div class="math-block">
-            \[
-            L = \mathbb{E}_{\epsilon,x_0,t}\|\epsilon_\theta(x_t, t) - \epsilon\|^2
-            \]
-        </div>
-
-        <h4>Training Progress</h4>
-        <div class="image-grid">
-            <img src="data/training_loss.png" alt="Training Loss">
-            <p class="image-description">Training loss curve over iterations</p>
-        </div>
-
-        <h4>Sample Results</h4>
-        <div class="comparison-grid">
-            <div>
-                <img src="data/epoch1_samples.png" alt="Epoch 1 Results">
-                <p class="image-description"></p>
+            
+            <div class="centered-figure">
+                <img src="data/atomic_ops_new.png" alt="UNet Operations">
+                <p class="image-description">Standard UNet Operations</p>
             </div>
-            <div>
-                <img src="data/epoch5_samples.png" alt="Epoch 5 Results">
-                <p class="image-description"></p>
+     
+    
+            <h4>Noising Process Visualization</h4>
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/visualization.png" alt="Noising Process" style="max-width: 100%;">
+                <p class="image-description">Visualization of noising process with σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
             </div>
-            <div>
-                <img src="data/epoch10_samples.png" alt="Epoch 10 Results">
-                <p class="image-description"></p>
+    
+            <h4>Training Progress</h4>
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/training_loss1.png" alt="Training Loss" style="max-width: 100%;">
+                <p class="image-description">Training loss curve over iterations</p>
             </div>
-            <div>
-                <img src="data/epoch15_samples.png" alt="Epoch 15 Results">
-                <p class="image-description"></p>
+    
+            <h4>Sample Results</h4>
+            <div class="comparison-grid">
+                <div style="text-align: center;">
+                    <img src="data/epoch1_samples1.png" alt="Epoch 1 Results">
+                    <p class="image-description">Results after first epoch</p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="data/epoch5_samples1.png" alt="Epoch 5 Results">
+                    <p class="image-description">Results after fifth epoch</p>
+                </div>
             </div>
-            <div>
-                <img src="data/epoch20_samples.png" alt="Epoch 20 Results">
-                <p class="image-description"></p>
+    
+            <h4>Out-of-Distribution Testing</h4>
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/ood_results.png" alt="Out of Distribution Results" style="max-width: 100%;">
+                <p class="image-description">Results on varying noise levels σ=[0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]</p>
             </div>
         </div>
     </div>
-</div>
-
-<div class="section">
-    <h3>3. Class-Conditioned UNet</h3>
-    <div class="example">
-        <p>
-            Implementation of class conditioning in the UNet, allowing controlled generation of specific MNIST digits.
-            The model learns to associate class embeddings with digit appearances.
-        </p>
-
-        <h4>Training Progress</h4>
-        <div class="image-grid">
-            <img src="data/class_cond_loss.png" alt="Class-Conditioned Training Loss">
-            <p class="image-description">Training loss curve for class-conditioned model</p>
-        </div>
-
-        <h4>Generated Samples</h4>
-        <div class="image-grid">
-            <img src="data/class_cond_samples1.png" alt="Class-Conditioned Samples">
-            <p class="image-description">4 samples per digit class (0-9) at epoch 5</p>
-        </div>
-        <h4>Generated Samples</h4>
-        <div class="image-grid">
-            <img src="data/class_cond_samples2.png" alt="Class-Conditioned Samples">
-            <p class="image-description">4 samples per digit class (0-9) at epoch 20</p>
+    
+    <div class="section">
+        <h3>Time-Conditioned UNet</h3>
+        <div class="example">
+            <p>
+                Extension of the UNet with time conditioning for iterative denoising. The model is conditioned 
+                on timestep t through fully connected blocks that inject timing information at multiple 
+                resolutions. By conditioning the unflatten and upsampling operations with learned time embeddings, 
+                the network learns to handle varying noise levels and can perform iterative denoising.
+            </p>
+            <p>
+                Training Parameters:
+                <ul>
+                    <li>Dataset: MNIST via torchvision.datasets.MNIST</li>
+                    <li>Batch Size: 128</li>
+                    <li>Epochs: 20 (increased from Part A due to task complexity)</li>
+                    <li>Model: Time-conditioned UNet with hidden dimension D = 64</li>
+                    <li>Optimizer: Adam with initial learning rate 1e-3</li>
+                    <li>Learning Rate Scheduler: ExponentialLR with gamma = 0.1^(1.0/num_epochs)</li>
+                </ul>
+            </p>
+            
+            <div class="math-block">
+                \[
+                L = \mathbb{E}_{\epsilon,x_0,t}\|\epsilon_\theta(x_t, t) - \epsilon\|^2
+                \]
+            </div>
+     
+            <h4>Training Algorithm</h4>
+            <div class="centered-figure">
+                <img src="data/algo3_c.png" alt="Time UNet Training">
+            </div>
+     
+            <h4>Sampling Algorithm</h4>
+            <div class="centered-figure">
+                <img src="data/algo4_c.png" alt="Time UNet Sampling">
+            </div>
+    
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/time_loss.png" alt="Training Loss" style="max-width: 100%;">
+                <p class="image-description"></p>
+            </div>
+            <div class="comparison-grid">
+                <div style="text-align: center;">
+                    <img src="data/time_5.png" alt="Epoch 5 Results">
+                    <p class="image-description"></p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="data/time_20.png" alt="Epoch 20 Results">
+                    <p class="image-description"></p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+    
+    <div class="section">
+        <h3>Class-Conditioned UNet</h3>
+        <div class="example">
+            <p>
+                Extension of the time-conditioned UNet by adding class conditioning. The model receives both 
+                time t and class c information through parallel FCBlocks. The class input is converted to one-hot vectors 
+                with 10% dropout probability for unconditioned training. Similar to time conditioning, both unflatten 
+                and upsampling operations are modulated with learned time and class embeddings, this enables
+                generation of specific digits.
+            </p>
+     
+            <p>
+                The model uses the same training parameters as the time-conditioned UNet.
+            </p>
+     
+            <h4>Training Algorithm</h4>
+            <div class="centered-figure">
+                <img src="data/algo3_c-1.png" alt="Class UNet Training">
+            </div>
+     
+            <h4>Sampling Algorithm</h4>
+            <div class="centered-figure">
+                <img src="data/algo4_c-1.png" alt="Class UNet Sampling">
+            </div>
 
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/class_loss.png" alt="Class-Conditioned Training Loss" style="max-width: 100%;">
+                <p class="image-description"></p>
+            </div>
+    
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/class_5.png" alt="Class-Conditioned Samples" style="max-width: 100%;">
+                <p class="image-description"></p>
+            </div>
+    
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data/class_20.png" alt="Class-Conditioned Samples" style="max-width: 100%;">
+                <p class="image-description"></p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
